@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/albertolopez/code/Alopezrueda/TaxiFareModel/mlruns/1/2320f902549c4217980ecbecc428e527/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '1'
+lifecycle_stage: active
+name: ''
+run_id: 2320f902549c4217980ecbecc428e527
+run_uuid: 2320f902549c4217980ecbecc428e527
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1654009010705
+status: 1
+tags: []
+user_id: unknown

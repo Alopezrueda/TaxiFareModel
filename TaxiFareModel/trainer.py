@@ -6,7 +6,9 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
-
+import mlflow
+from mlflow.tracking import MlflowClient
+from memoized_property import memoized_property
 
 class Trainer():
     def __init__(self, X, y):
@@ -17,6 +19,31 @@ class Trainer():
         self.pipeline = None
         self.X = X
         self.y = y
+        self.MLFLOW_URI = "https://mlflow.lewagon.ai/"
+        self.experiment_name = "[UK] [London] [Albertolopez] Linear v1"
+
+    @memoized_property
+    def mlflow_client(self):
+        mlflow.set_tracking_uri(self.MLFLOW_URI)
+        return MlflowClient()
+
+    @memoized_property
+    def mlflow_experiment_id(self):
+        try:
+            return self.mlflow_client.create_experiment(self.experiment_name)
+        except BaseException:
+            return self.mlflow_client.get_experiment_by_name(self.experiment_name).experiment_id
+
+    @memoized_property
+    def mlflow_run(self):
+        return self.mlflow_client.create_run(self.mlflow_experiment_id)
+
+    def mlflow_log_param(self, key, value):
+        self.mlflow_client.log_param(self.mlflow_run.info.run_id, key, value)
+
+    def mlflow_log_metric(self, key, value):
+        self.mlflow_client.log_metric(self.mlflow_run.info.run_id, key, value)
+
 
     def set_pipeline(self):
 
@@ -48,7 +75,8 @@ class Trainer():
     def evaluate(self, X_test, y_test):
         """evaluates the pipeline on df_test and return the RMSE"""
         y_pred = self.pipeline.predict(X_test)
-        return compute_rmse(y_pred, y_test)
+        rmse = compute_rmse(y_pred, y_test)
+        return rmse
 
 if __name__ == "__main__":
     # get & clean data
@@ -68,3 +96,6 @@ if __name__ == "__main__":
     # Evaluate
     rmse = t.evaluate(X_test, y_test)
     print(rmse)
+
+    # t.mlflow_log_param("RMSE", rmse)
+    t.mlflow_log_metric("RMSE", rmse)
